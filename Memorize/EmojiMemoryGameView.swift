@@ -31,12 +31,11 @@ struct EmojiMemoryGameView: View {
     // `HStack(content: { ... })` is the same as
     // `HStack() { ... }` as well as
     // `HStack {}` when no arguments are passed
-    HStack {
-      ForEach(viewModel.cards) { card in
-        CardView(card: card).onTapGesture {
-          self.viewModel.choose(card: card)
-        }
+    Grid(viewModel.cards){ card in
+      CardView(card: card).onTapGesture {
+        self.viewModel.choose(card: card)
       }
+      .padding(5)
     }
       // applies it to all subviews
       .foregroundColor(Color.orange)
@@ -61,10 +60,14 @@ struct CardView: View {
       if card.isFaceUp {
         // white background
         // orange border
+        RoundedRectangle(cornerRadius: CORNER_RADIUS).fill(Color.white)
         RoundedRectangle(cornerRadius: CORNER_RADIUS).stroke(lineWidth: EDGE_LINE_WIDTH)
-        Text(card.content).font(Font.largeTitle)
+        Text(card.content)
       } else {
-        RoundedRectangle(cornerRadius: CORNER_RADIUS).fill()
+        // only draw if card isnt matched
+        if !card.isMatched {
+          RoundedRectangle(cornerRadius: CORNER_RADIUS).fill()
+        }
       }
     }
     .font(Font.system(size: fontSize(for: size)))
