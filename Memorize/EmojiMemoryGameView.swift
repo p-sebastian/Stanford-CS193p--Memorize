@@ -53,39 +53,37 @@ struct CardView: View {
   // this is simply to avoid the need for adding
   // .self to all external references when using
   // GeometryReader closure
-  func body(for size: CGSize) -> some View {
-    // one line will auto return
-    // so return keyword is not necessary
-    ZStack {
-      if card.isFaceUp {
-        // white background
-        // orange border
-        RoundedRectangle(cornerRadius: CORNER_RADIUS).fill(Color.white)
-        RoundedRectangle(cornerRadius: CORNER_RADIUS).stroke(lineWidth: EDGE_LINE_WIDTH)
-        Text(card.content)
-      } else {
-        // only draw if card isnt matched
-        if !card.isMatched {
-          RoundedRectangle(cornerRadius: CORNER_RADIUS).fill()
-        }
-      }
+  // @ViewBuilder, iterpretes everything inside as a List of Views,
+  // so it takes care of not returning anything, which on ViewBuilder
+  // means an empty View
+  @ViewBuilder
+  private func body(for size: CGSize) -> some View {
+    if card.isFaceUp || !card.isMatched {
+      // one line will auto return
+      // so return keyword is not necessary
+      ZStack {
+        // coordinates start from the top left as 0,0
+        Pie(startAngle: Angle.degrees(0-90), endAngle: Angle.degrees(110-90), clockwise: true).padding(5).opacity(0.4)
+        Text(card.content).font(Font.system(size: fontSize(for: size)))
+        // cardify is an extension of View
+      }.cardify(isFaceUp: card.isFaceUp)
     }
-    .font(Font.system(size: fontSize(for: size)))
   }
   
   // MARK: - Drawing Constants
   
-  let CORNER_RADIUS: CGFloat = 10
-  let EDGE_LINE_WIDTH: CGFloat = 3.0
-  let FONT_SCALE_FACTOR: CGFloat = 0.75
+  private let FONT_SCALE_FACTOR: CGFloat = 0.7
   
   private func fontSize(for size: CGSize) -> CGFloat {
     min(size.width, size.height) * FONT_SCALE_FACTOR
   }
 }
 
+// just for the preview
 struct ContentView_Previews: PreviewProvider {
   static var previews: some View {
-    EmojiMemoryGameView(viewModel: EmojiMemoryGame())
+    let game = EmojiMemoryGame()
+    game.choose(card: game.cards[0])
+    return EmojiMemoryGameView(viewModel: game)
   }
 }

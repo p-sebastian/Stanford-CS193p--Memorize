@@ -13,7 +13,7 @@ class EmojiMemoryGame: ObservableObject {
   // @Published will call objectWillChange.send, any time the var changes
   @Published private var model: MemoryGame<String> = createMemoryGame()
   
-  static func createMemoryGame() -> MemoryGame<String> {
+  private static func createMemoryGame() -> MemoryGame<String> {
     let emojis: [String] = ["👻", "🎃", "🕸"]
     return MemoryGame<String>(numberOfPairsOfCards: emojis.count) { pair in emojis[pair] }
   }

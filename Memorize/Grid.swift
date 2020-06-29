@@ -10,8 +10,8 @@ import SwiftUI
 
 // we are constraining Item to be a generic of Identifiable
 struct Grid<Item, ItemView>: View where Item: Identifiable, ItemView: View {
-  var items: [Item]
-  var viewForItem: (Item) -> ItemView
+  private var items: [Item]
+  private var viewForItem: (Item) -> ItemView
   
   // @escaping means that the var which is a function, will be called outside of
   // where it is defined, in this case on the init, its only being assigned
