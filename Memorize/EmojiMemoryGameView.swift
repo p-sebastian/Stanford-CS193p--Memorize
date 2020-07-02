@@ -31,15 +31,22 @@ struct EmojiMemoryGameView: View {
     // `HStack(content: { ... })` is the same as
     // `HStack() { ... }` as well as
     // `HStack {}` when no arguments are passed
-    Grid(viewModel.cards){ card in
-      CardView(card: card).onTapGesture {
-        self.viewModel.choose(card: card)
+    VStack {
+      Grid(viewModel.cards){ card in
+        CardView(card: card).onTapGesture {
+          withAnimation(.linear) {
+            self.viewModel.choose(card: card)
+          }
+        }
+        .padding(5)
       }
-      .padding(5)
+        // applies it to all subviews
+        .foregroundColor(Color.orange)
+        .padding()
+      Button(action: {
+        withAnimation(.easeInOut) { self.viewModel.resetGame() }
+      }) { Text("New Game") }
     }
-      // applies it to all subviews
-      .foregroundColor(Color.orange)
-      .padding()
   }
 }
 
@@ -48,6 +55,18 @@ struct CardView: View {
   
   var body: some View {
     GeometryReader { geometry in self.body(for: geometry.size)}
+  }
+  
+  // this local State, syncs with the changes of the model to continuosly
+  // update the View with the animation
+  @State private var animatedBonusRemaining: Double = 0
+  
+  private func startBonusTimeAnimation() {
+    // force sync
+    animatedBonusRemaining = card.bonusRemaining
+    withAnimation(.linear(duration: card.bonusTimeRemaining)) {
+      animatedBonusRemaining = 0
+    }
   }
   
   // this is simply to avoid the need for adding
@@ -62,11 +81,26 @@ struct CardView: View {
       // one line will auto return
       // so return keyword is not necessary
       ZStack {
-        // coordinates start from the top left as 0,0
-        Pie(startAngle: Angle.degrees(0-90), endAngle: Angle.degrees(110-90), clockwise: true).padding(5).opacity(0.4)
-        Text(card.content).font(Font.system(size: fontSize(for: size)))
+        Group {
+          if card.isConsumingBonusTime {
+            // coordinates start from the top left as 0,0
+            Pie(startAngle: Angle.degrees(0-90), endAngle: Angle.degrees(-animatedBonusRemaining * 360 - 90), clockwise: true)
+              .onAppear {
+                self.startBonusTimeAnimation()
+            }
+          } else {
+            Pie(startAngle: Angle.degrees(0-90), endAngle: Angle.degrees(-card.bonusRemaining * 360 - 90), clockwise: true)
+          }
+        }
+        .padding(5).opacity(0.4)
+        Text(card.content)
+          .font(Font.system(size: fontSize(for: size)))
+          .rotationEffect(Angle.degrees(card.isMatched ? 360 : 0))
+          .animation(card.isMatched ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default)
         // cardify is an extension of View
-      }.cardify(isFaceUp: card.isFaceUp)
+      }
+      .cardify(isFaceUp: card.isFaceUp)
+      .transition(AnyTransition.scale)
     }
   }
   
